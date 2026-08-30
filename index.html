@@ -1,149 +1,134 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TikTok Downloader</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Downloader</title>
 
-<style>
-* {
-  box-sizing: border-box;
-}
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #111;
-  color: white;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-.box {
-  width: 90%;
-  max-width: 500px;
-  text-align: center;
-}
+    .box {
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
 
-h1 {
-  font-size: 32px;
-  margin-bottom: 10px;
-}
+    h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
 
-p {
-  color: #aaa;
-}
+    p {
+      color: #aaa;
+    }
 
-input {
-  width: 100%;
-  padding: 15px;
-  border: none;
-  border-radius: 10px;
-  margin-top: 20px;
-  font-size: 16px;
-}
+    input {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      margin: 20px 0 10px;
+      font-size: 16px;
+    }
 
-button {
-  width: 100%;
-  padding: 15px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 10px;
-  background: white;
-  color: black;
-  font-size: 16px;
-  font-weight: bold;
-}
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      background: white;
+      color: black;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-button:active {
-  transform: scale(0.98);
-}
+    button:disabled {
+      opacity: 0.5;
+    }
 
-#result {
-  margin-top: 20px;
-  color: #aaa;
-  word-break: break-word;
-}
-</style>
+    #status {
+      margin-top: 15px;
+      color: #aaa;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="box">
+  <div class="box">
+    <h1>TikTok Downloader</h1>
+    <p>Paste link video TikTok kamu</p>
 
-  <h1>TikTok Downloader</h1>
+    <input
+      id="url"
+      type="text"
+      placeholder="https://www.tiktok.com/..."
+    >
 
-  <p>Paste your TikTok video link</p>
+    <button id="downloadBtn">DOWNLOAD</button>
 
-  <input
-    id="url"
-    type="text"
-    placeholder="https://www.tiktok.com/..."
-  >
+    <div id="status"></div>
+  </div>
 
-  <button onclick="downloadVideo()">
-    DOWNLOAD
-  </button>
+  <script>
+    const API_URL = "https://tiktok-api.delonwongkar07.workers.dev";
 
-  <div id="result"></div>
+    const input = document.getElementById("url");
+    const button = document.getElementById("downloadBtn");
+    const status = document.getElementById("status");
 
-</div>
+    button.addEventListener("click", async () => {
+      const url = input.value.trim();
 
-<script>
-async function downloadVideo() {
+      if (!url) {
+        status.textContent = "Masukkan link TikTok dulu.";
+        return;
+      }
 
-  const url = document.getElementById("url").value.trim();
-  const result = document.getElementById("result");
+      button.disabled = true;
+      status.textContent = "Memproses...";
 
-  if (!url) {
-    result.innerText = "Masukkan link TikTok dulu.";
-    return;
-  }
+      try {
+        const response = await fetch(
+          API_URL + "?url=" + encodeURIComponent(url)
+        );
 
-  result.innerText = "Processing...";
+        if (!response.ok) {
+          throw new Error("Server error");
+        }
 
-  try {
+        const data = await response.json();
 
-    const api =
-      "https://tiktok-api.delongwonkar07.workers.dev/?url="
-      + encodeURIComponent(url);
+        if (data.download_url) {
+          window.location.href = data.download_url;
+          status.textContent = "Download dimulai...";
+        } else {
+          status.textContent = "Link download tidak ditemukan.";
+        }
 
-    const response = await fetch(api);
+      } catch (error) {
+        status.textContent =
+          "Gagal memproses. Coba lagi.";
+      }
 
-    if (!response.ok) {
-      throw new Error("API error");
-    }
-
-    const data = await response.json();
-
-    if (data.download_url) {
-
-      result.innerHTML =
-        '<a href="' +
-        data.download_url +
-        '" target="_blank" style="color:white;">' +
-        'Download Video' +
-        '</a>';
-
-    } else {
-
-      result.innerText =
-        "API belum mengembalikan link download.";
-
-    }
-
-  } catch (error) {
-
-    result.innerText =
-      "Gagal terhubung ke API.";
-
-    console.error(error);
-
-  }
-}
-</script>
+      button.disabled = false;
+    });
+  </script>
 
 </body>
 </html>
